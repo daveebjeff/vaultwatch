@@ -1,0 +1,21 @@
+# vaultwatch example configuration
+
+vault:
+  # Vault server address
+  address: "https://vault.example.com"
+
+  # Vault token — can also be set via VAULT_TOKEN environment variable
+  token: "s.XXXXXXXXXXXX"
+
+  # Optional: Vault namespace (Vault Enterprise)
+  namespace: ""
+
+  # How often to poll Vault for secret/lease status
+  interval: 60s
+
+alerting:
+  # Warn when a secret or lease expires within this duration
+  warn_threshold: 168h     # 7 days
+
+  # Critical alert when a secret or lease expires within this duration
+  critical_threshold: 24h  # 1 day
