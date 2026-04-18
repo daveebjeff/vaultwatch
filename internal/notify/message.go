@@ -2,31 +2,28 @@ package notify
 
 import "time"
 
-// Status represents the alert status for a secret.
+// Status represents the expiration state of a secret.
 type Status string
 
 const (
-	// StatusExpired indicates the secret has already expired.
-	StatusExpired Status = "EXPIRED"
-	// StatusExpiringSoon indicates the secret will expire soon.
-	StatusExpiringSoon Status = "EXPIRING_SOON"
-	// StatusOK indicates the secret is healthy.
-	StatusOK Status = "OK"
+	// StatusOK means the secret is not expiring soon.
+	StatusOK Status = "ok"
+	// StatusExpiringSoon means the secret will expire within the warn window.
+	StatusExpiringSoon Status = "expiring_soon"
+	// StatusExpired means the secret has already expired.
+	StatusExpired Status = "expired"
 )
 
-// Message holds the data passed to every Notifier.
+// Message carries the alert details sent to notifiers.
 type Message struct {
+	// Summary is a human-readable one-line description.
+	Summary string
 	// SecretPath is the Vault path of the secret.
 	SecretPath string
-	// Status is the current alert status.
+	// Status is the expiration status.
 	Status Status
-	// Expiry is the time at which the secret expires.
-	Expiry time.Time
-	// Detail is a human-readable description of the alert.
-	Detail string
-}
-
-// Notifier is the interface implemented by all notification backends.
-type Notifier interface {
-	Send(msg Message) error
+	// ExpiresAt is the time the secret expires.
+	ExpiresAt time.Time
+	// Details holds optional extra key/value metadata.
+	Details map[string]string
 }
