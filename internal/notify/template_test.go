@@ -86,3 +86,14 @@ func TestTemplateNotifier_OriginalMessagePreserved(t *testing.T) {
 		t.Errorf("status not preserved: %v", cap.got.Status)
 	}
 }
+
+func TestTemplateNotifier_ExpiresAtPreserved(t *testing.T) {
+	cap := &captureNotifier{}
+	n, _ := NewTemplateNotifier(cap, "rendered")
+	expected := time.Date(2025, 1, 15, 9, 30, 0, 0, time.UTC)
+	orig := Message{Path: "secret/token", Status: StatusExpiringSoon, ExpiresAt: expected}
+	_ = n.Send(orig)
+	if !cap.got.ExpiresAt.Equal(expected) {
+		t.Errorf("ExpiresAt not preserved: got %v, want %v", cap.got.ExpiresAt, expected)
+	}
+}
