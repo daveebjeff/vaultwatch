@@ -66,3 +66,41 @@ func TestHTTPGetNotifier_Send_BadURL(t *testing.T) {
 		t.Fatal("expected error for bad URL")
 	}
 }
+
+func TestHTTPGetNotifier_Send_QueryContainsSecretPath(t *testing.T) {
+	var gotQuery string
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotQuery = r.URL.RawQuery
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+
+	n, _ := NewHTTPGetNotifier(ts.URL)
+	msg := Message{
+		Status:     StatusExpiringSoon,
+		SecretPath: "secret/myapp",
+		ExpiresAt:  time.Date(2025, 6, 15, 12, 0, 0, 0, time.UTC),
+	}
+	if err := n.Send(msg); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if gotQuery == "" {
+		t.Fatal("expected query parameters")
+	}
+	if !contains(gotQuery, "secret") {
+		t.Errorf("expected secret path in query, got: %s", gotQuery)
+	}
+}
+
+// contains is a helper to check substring presence in query strings.
+func contains(s, substr string) bool {
+	return len(s) >= len(substr) && (s == substr || len(substr) == 0 ||
+		(func() bool {
+			for i := 0; i <= len(s)-len(substr); i++ {
+				if s[i:i+len(substr)] == substr {
+					return true
+				}
+			}
+			return false
+		})())
+}
