@@ -13,8 +13,8 @@ const DefaultTemplate = `[{{.Status}}] {{.Path}} expires at {{.ExpiresAt.Format 
 // forwarding the formatted string to an inner Notifier via a synthetic
 // Message whose Path carries the rendered text.
 type TemplateNotifier struct {
-	inner    Notifier
-	tmpl     *template.Template
+	inner Notifier
+	tmpl  *template.Template
 }
 
 // NewTemplateNotifier creates a TemplateNotifier with the provided template
@@ -42,4 +42,15 @@ func (n *TemplateNotifier) Send(msg Message) error {
 	rendered := msg
 	rendered.Path = buf.String()
 	return n.inner.Send(rendered)
+}
+
+// Render executes the template against msg and returns the resulting string
+// without forwarding to the inner Notifier. Useful for previewing or testing
+// a template configuration.
+func (n *TemplateNotifier) Render(msg Message) (string, error) {
+	var buf bytes.Buffer
+	if err := n.tmpl.Execute(&buf, msg); err != nil {
+		return "", fmt.Errorf("template notifier: render: %w", err)
+	}
+	return buf.String(), nil
 }
