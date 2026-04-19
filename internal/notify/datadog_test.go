@@ -69,6 +69,26 @@ func TestDatadogNotifier_Send_Non2xx(t *testing.T) {
 	}
 }
 
+func TestDatadogNotifier_Send_ServerUnavailable(t *testing.T) {
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusServiceUnavailable)
+	}))
+	defer ts.Close()
+
+	n, _ := NewDatadogNotifier("test-key")
+	n.url = ts.URL
+
+	msg := Message{
+		SecretPath: "secret/db",
+		Status:     StatusExpiringSoon,
+		ExpireAt:   time.Now().Add(time.Hour),
+		Body:       "Expiring soon",
+	}
+	if err := n.Send(msg); err == nil {
+		t.Fatal("expected error for 503 response")
+	}
+}
+
 func TestDatadogAlertType(t *testing.T) {
 	cases := []struct {
 		status   Status
