@@ -22,6 +22,14 @@ func TestNewJitterNotifier_ZeroMaxJitter(t *testing.T) {
 	}
 }
 
+func TestNewJitterNotifier_NegativeMaxJitter(t *testing.T) {
+	noop := NewNoopNotifier()
+	_, err := NewJitterNotifier(noop, -1*time.Millisecond)
+	if err == nil {
+		t.Fatal("expected error for negative maxJitter")
+	}
+}
+
 func TestNewJitterNotifier_Valid(t *testing.T) {
 	noop := NewNoopNotifier()
 	j, err := NewJitterNotifier(noop, 50*time.Millisecond)
