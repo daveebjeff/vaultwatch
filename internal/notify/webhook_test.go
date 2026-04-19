@@ -62,3 +62,19 @@ func TestWebhookNotifier_Send_Non2xx(t *testing.T) {
 		t.Fatal("expected error for non-2xx response")
 	}
 }
+
+func TestWebhookNotifier_Send_ContentType(t *testing.T) {
+	var contentType string
+	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		contentType = r.Header.Get("Content-Type")
+		w.WriteHeader(http.StatusOK)
+	}))
+	defer ts.Close()
+
+	n, _ := NewWebhookNotifier(ts.URL)
+	_ = n.Send(Message{Path: "secret/test", Status: StatusExpiringSoon, ExpiresAt: time.Now()})
+
+	if contentType != "application/json" {
+		t.Errorf("expected Content-Type %q, got %q", "application/json", contentType)
+	}
+}
