@@ -19,4 +19,9 @@
 // The queue is bounded by maxSize; once full, additional failures are silently
 // dropped to avoid unbounded memory growth. Use Drain to consume and clear the
 // queue, or Failed to read without clearing.
+//
+// # Thread Safety
+//
+// DeadLetterNotifier is safe for concurrent use. All methods acquire an
+// internal lock before accessing the dead-letter queue.
 package notify
