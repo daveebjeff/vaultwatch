@@ -61,3 +61,14 @@ func TestValidate_ZeroWarnBefore(t *testing.T) {
 		t.Fatal("expected error for zero warn_before")
 	}
 }
+
+func TestValidate_NegativeInterval(t *testing.T) {
+	cfg := &monitor.Config{
+		Interval:   -1 * time.Second,
+		WarnBefore: time.Hour,
+		Paths:      []monitor.SecretPath{{Path: "secret/app"}},
+	}
+	if err := cfg.Validate(); err == nil {
+		t.Fatal("expected error for negative interval")
+	}
+}
