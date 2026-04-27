@@ -30,7 +30,14 @@ func (c EscalationConfig) ParsedTimeout() (time.Duration, error) {
 }
 
 // Build constructs an EscalationNotifier from the config and provided notifiers.
+// Both primary and secondary must be non-nil.
 func (c EscalationConfig) Build(primary, secondary Notifier) (*EscalationNotifier, error) {
+	if primary == nil {
+		return nil, fmt.Errorf("escalation_config: primary notifier must not be nil")
+	}
+	if secondary == nil {
+		return nil, fmt.Errorf("escalation_config: secondary notifier must not be nil")
+	}
 	if err := c.Validate(); err != nil {
 		return nil, err
 	}
