@@ -10,12 +10,12 @@ import (
 // RollupNotifier collects messages over a window and sends a single
 // summary notification listing all affected secret paths.
 type RollupNotifier struct {
-	mu       sync.Mutex
-	inner    Notifier
-	window   time.Duration
-	msgs     []Message
-	timer    *time.Timer
-	maxSize  int
+	mu      sync.Mutex
+	inner   Notifier
+	window  time.Duration
+	msgs    []Message
+	timer   *time.Timer
+	maxSize int
 }
 
 // NewRollupNotifier creates a RollupNotifier that flushes after window
@@ -44,7 +44,7 @@ func (r *RollupNotifier) Send(msg Message) error {
 		r.timer = time.AfterFunc(r.window, func() {
 			r.mu.Lock()
 			defer r.mu.Unlock()
-			r.flush()
+			r.flush() //nolint:errcheck
 		})
 	}
 
@@ -53,7 +53,7 @@ func (r *RollupNotifier) Send(msg Message) error {
 			r.timer.Stop()
 			r.timer = nil
 		}
-		r.flush()
+		return r.flush()
 	}
 	return nil
 }
@@ -67,6 +67,13 @@ func (r *RollupNotifier) Flush() error {
 		r.timer = nil
 	}
 	return r.flush()
+}
+
+// Pending returns the number of messages currently buffered and waiting to be flushed.
+func (r *RollupNotifier) Pending() int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return len(r.msgs)
 }
 
 func (r *RollupNotifier) flush() error {
